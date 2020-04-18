@@ -1,3 +1,5 @@
 flask
 requests
-
+h5py
+numpy
+sqlalchemy

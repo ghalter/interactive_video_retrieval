@@ -2,10 +2,57 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>$
-    hello world
+    <title>Interactive Movie Retrieval</title>
+    <script src="/static/api.js"></script>
+    <script
+			  src="https://code.jquery.com/jquery-3.5.0.js"
+			  integrity="sha256-r/AaFHrszJtwpe+tHyNi/XCfMxYpbsRg2Uqn0x3s2zc="
+			  crossorigin="anonymous"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 </head>
 <body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="input-group input-group-sm mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-sm">Query</span>
+          </div>
+          <input id="query-string" type="text" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
+            <div>
+                <button id="btn-query" class="btn btn-primary">Query</button>
+            </div>
+        </div>
+        </div>
+    </div>
+    <div id="result-list" class="row"></div>
+</div>
 
+
+<script>
+
+    function queryCallback(e){
+        $("#result-list").html("");
+        let cid = 0;
+        e.forEach((elem)=>{
+            let t = createImageCard(elem.location, elem.thumbnail, cid);
+            $("#result-list").append(t);
+            $("#submit-" + cid).on("click", function(){
+                submitResult(elem.location.movie, elem.location.frame_pos)
+            });
+            
+            cid ++;
+        });
+    }
+
+    $( document ).ready(function() {
+        $("#btn-query").on("click", function(){
+            queryDatabase($("#query-string").val(), queryCallback);
+        })
+    });
+
+
+</script>
 </body>
 </html>

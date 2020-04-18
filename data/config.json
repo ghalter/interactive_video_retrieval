@@ -1,0 +1,6 @@
+{
+  "server": "http://192.168.0.0",
+  "member": "Bob",
+  "team": "Zerberster",
+  "thumbnail_folder": "data/thumbnails/"
+}
