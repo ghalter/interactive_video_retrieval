@@ -3,8 +3,8 @@ import os
 import numpy as np
 import cv2
 
-from hdf5_manager import HDF5Manager
-from database import session, dump_entry, get_by_hdf_index, Entry
+from src.hdf5_manager import HDF5Manager
+from src.database import session, dump_entry, get_by_hdf_index
 
 movies = ["C:/Users/gaude/Documents/VIAN/projects/trailer.mp4"]
 resolution = 10

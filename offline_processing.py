@@ -4,7 +4,6 @@ Here we preprocess all data, store it in some database / hdf5 file, for later re
 """
 
 import cv2
-from hdf5_manager import HDF5Manager
 
 p = "C:/Users/gaude/Documents/VIAN/projects/trailer.mp4"
 resolution = 10

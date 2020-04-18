@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
 
-from config import CONFIG
+from src.config import CONFIG
 
 Base = declarative_base()
 

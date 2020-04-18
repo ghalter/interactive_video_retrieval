@@ -1,13 +1,11 @@
 """
 This is the web server
 """
-import json
-
 
 from flask import Flask, render_template, request, jsonify, make_response
 import requests
 
-from config import CONFIG
+from src.config import CONFIG
 
 app = Flask(__name__)
 app.debug = True
