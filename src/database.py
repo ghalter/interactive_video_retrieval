@@ -9,8 +9,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
 
 from src.config import CONFIG
+from flask_sqlalchemy import SQLAlchemy
+
 MAX_WIDTH = 730
+
 Base = declarative_base()
+db = SQLAlchemy()
 
 def resize_with_aspect(img, width = None, height = None, mode=cv2.INTER_CUBIC):
     if width is not None:
@@ -32,7 +36,6 @@ class Entry(Base):
     thumbnail_path = Column(String)
 
     histogram_feature_index = Column(Integer, default=-1)
-
 
 engine = create_engine("sqlite:///data/database.db", echo=False)
 Base.metadata.create_all(engine)

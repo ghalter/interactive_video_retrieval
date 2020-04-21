@@ -1,24 +1,37 @@
 """
 This is the web server
 """
+import os
+from typing import List
+from random import sample
 
-from flask import Flask, render_template, request, jsonify, make_response
+from flask import Flask, render_template, request, jsonify, make_response, send_file, url_for
+
 import requests
+from src.database import Entry, db
 
 from src.config import CONFIG
 
+
 app = Flask(__name__)
 app.debug = True
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data/database.db"
+
+db.init_app(app)
+
 
 
 def perform_query(string, k):
     # TODO implemented the actual query to perform
     print(string)
     res = []
-    for i in range(k):
+    imgs = db.session.query(Entry).all() #type:List[Entry]
+
+    imgs = sample(imgs, k=50)
+    for i in imgs:
         res.append(dict(
-            location = dict(movie="movie-title", frame_pos = 10),
-            thumbnail = "https://homepages.cae.wisc.edu/~ece533/images/airplane.png"
+            location = dict(movie=i.movie_name, frame_pos = i.frame_pos),
+            thumbnail = url_for("get_screenshot", file_path = i.thumbnail_path.replace("/", "|"))
         ))
     return res
 
@@ -26,6 +39,13 @@ def perform_query(string, k):
 @app.route('/')
 def index():
     return render_template("index.html")
+
+@app.route('/screenshot/<string:file_path>')
+def get_screenshot(file_path):
+    file_path = file_path.replace("|", "/")
+    path = os.path.abspath(file_path)
+    print(path)
+    return send_file(path, mimetype='image/gif')
 
 
 @app.route('/submit/<string:video>/<int:frame>')
