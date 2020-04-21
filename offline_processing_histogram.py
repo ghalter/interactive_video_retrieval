@@ -26,15 +26,13 @@ def calculate_histogram(frame_lab, n_bins=16):
     return hist
 
 
-
 ## Extraction ##
 # We first create a HDF5 File to store all feature vectors
 ds = HDF5Manager("data/features.hdf5", mode="r+")
 
 
 # Initialize a new feature vector dataset, in this case color histograms.
-ds.initialize_dataset("histogr"
-                      "ams", (16,16,16), dtype=np.float16)
+ds.initialize_dataset("histograms", (16,16,16), dtype=np.float16)
 
 # Let's iterate over all movies
 for m in movies:
@@ -63,8 +61,8 @@ for m in movies:
 
         # Keep the location of the feature vector in the HDF5, in the SQL Database.
         db_entry.histogram_feature_index = h_index
-        ## END HISTOGRAM ##
 
+        ## END HISTOGRAM ##
         cv2.imshow("output", frame_bgr)
         cv2.waitKey(10)
 

@@ -13,6 +13,7 @@ import h5py
 import numpy as np
 from threading import Lock
 
+
 # Chunk Size
 CHUNK_SIZE = (200,)
 
@@ -142,6 +143,7 @@ class HDF5Manager():
             Y = self.h5_file[dataset_name][x0:x1]
 
             indices = np.arange(x0, x1, dtype=np.uint64)
+            #TODO Cosine Similarity
             mse = np.nan_to_num(((Y - X) ** 2)).mean(axis=mse_axis)
 
             sorting = np.argsort(mse)
