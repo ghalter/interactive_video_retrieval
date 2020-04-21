@@ -131,3 +131,13 @@ dmypy.json
 *.jpg
 *.hdf5
 *.db
+
+data/annotations/*
+data/thumbnails/*
+data/thumbnails.zip
+data/train2014
+
+src/image_captioning
+src/image_captioning.py
+
+.idea/*
