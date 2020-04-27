@@ -10,7 +10,15 @@ def calculate_histogram(frame_lab, n_bins=10):
     :param n_bins:
     :return:
     """
-    frame_lab = np.reshape(cv2.cvtColor(frame_lab, cv2.COLOR_BGR2LAB), (frame_lab.shape[0] * frame_lab.shape[1], 3))
+    if frame_lab.shape[2] > 3:
+        remove_alpha = np.reshape(frame_lab, (frame_lab.shape[0] * frame_lab.shape[1], 4))
+        frame_lab = remove_alpha[np.where(remove_alpha[:, 3] > 0)]
+        frame_lab = frame_lab[:, :3]
+
+    else:
+        frame_lab = np.reshape(frame_lab, (frame_lab.shape[0] * frame_lab.shape[1], 3))
+
+    print(frame_lab.shape)
     hist = cv2.calcHist([frame_lab[:, 0],
                          frame_lab[:, 1],
                          frame_lab[:, 2]],
@@ -25,7 +33,7 @@ def calculate_histogram(frame_lab, n_bins=10):
 def calculate_spatial_histogram(frame_lab, n_rows = 3, n_cols = 3, n_bins = 10):
     row_wnd = int(np.floor(frame_lab.shape[0] / n_rows))
     col_wnd = int(np.floor(frame_lab.shape[1] / n_cols))
-    d = np.zeros(shape=(n_rows,n_cols, n_bins, n_bins, n_bins))
+    d = np.zeros(shape=(n_rows, n_cols, n_bins, n_bins, n_bins))
     for x in range(n_rows):
         for y in range(n_cols):
             d[x, y] = calculate_histogram(frame_lab[
@@ -35,9 +43,27 @@ def calculate_spatial_histogram(frame_lab, n_rows = 3, n_cols = 3, n_bins = 10):
     return d
 
 
-
 def histogram_comparator(X, Y):
-    return np.nan_to_num(((Y - X) ** 2)).mean(axis=(1,2,3,4,5))
+    n_rows = Y.shape[1]
+    n_cols = Y.shape[2]
+
+    row_wnd = int(np.floor(X.shape[0] / n_rows))
+    col_wnd = int(np.floor(X.shape[1] / n_cols))
+
+    mse = []
+    c = 0
+    for x in range(n_rows):
+        for y in range(n_cols):
+            h = calculate_histogram(X[
+                                x * row_wnd: (x + 1) * row_wnd,
+                                y * col_wnd: (y + 1) * col_wnd
+                                ], n_bins=10)
+            if np.sum(h) > 0:
+                mse.append(((Y[:, x, y] - h) ** 2).mean(axis=(1,2,3)))
+                c += 1
+    mse = np.array(mse)
+    mse = np.mean(mse, axis=0)
+    return mse
 
 
 if __name__ == '__main__':
@@ -49,20 +75,26 @@ if __name__ == '__main__':
     ds.initialize_dataset("histograms", shape=(3,3,10,10,10), dtype=np.float16)
     for p in test_images:
         img = cv2.imread(p)
-        cv2.imshow("t", img)
-        cv2.waitKey(50)
+
         lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
         hists = calculate_spatial_histogram(lab)
         ds.dump(hists, "histograms")
 
     img = cv2.imread(test_images[50])
+
+    alpha = np.zeros(shape=(img.shape[0], img.shape[1]), dtype=np.float32)
+    alpha[-50:, -50:] = 1.0
+
     lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
-    hists = calculate_spatial_histogram(lab)
-    indices, distances = ds.fit(hists, "histograms")
+    lab = np.dstack((lab, alpha))
+    print(lab.shape)
+    indices, distances = ds.fit(lab, "histograms", func=histogram_comparator)
 
     print(indices)
-    img = cv2.imread(test_images[50])
+    # img = cv2.imread(test_images[50])
+    img[np.where(alpha == 0.0)] = [0, 0, 0]
     cv2.imshow("input", img)
-    img = cv2.imread(test_images[indices[0]])
-    cv2.imshow("output", img)
+    for i in range(10):
+        img = cv2.imread(test_images[indices[i]])
+        cv2.imshow("output" + str(i), img)
     cv2.waitKey()

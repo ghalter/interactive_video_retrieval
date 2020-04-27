@@ -4,17 +4,46 @@
     html,body{height:100%;}
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.0/dist/spectrum.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.0/dist/spectrum.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.6.3/fabric.js" integrity="sha256-aSsIe9BokS5Bo18owzdTHNNW1EMZsDDe+WzMkZBvGmY=" crossorigin="anonymous"></script>
+
 {% endblock %}
 
 {% block content %}
-    <div id="result-list" class="row">
+<div class="row">
+    <div class="col-md-4">
+        <div id="sheet-container" class="row">
+            <canvas id="sheet" height="300" width="500"></canvas>
+        </div>
+        
+        <form>
+            <div class="form-group">
+              <label for="formControlRange">Stroke</label>
+              <input type="range" class="form-control-range" id="formControlRange">
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-clear">Clear</button>
+            <button type="button" class="btn btn-primary" id="btn-submit">Submit</button>
+          </form>
+
+        <div class="row w-100">
+            <div class="col-md-12">
+                <input id="color-picker" value='#276cb8'>
+            </div>
+        </div>
 
     </div>
-    <div class="row justify-content-center h-100">
-        <div class="col-md-12">
-            {% include "image_view.tmpl.html" %}
+    <div class="col-md-8">
+        <div id="result-list" class="row">
+
+        </div>
+        <div class="row justify-content-center h-100">
+            <!-- <div class="col-md-8">
+                {% include "image_view.tmpl.html" %}
+            </div> -->
         </div>
     </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -33,13 +62,55 @@
             
             cid ++;
         });
-        updateImageGrid(e);
+
     }
 
     $( document ).ready(function() {
         $("#btn-query").on("click", function(){
             queryDatabase($("#query-string").val(), queryCallback);
         })
+        var canvas = new fabric.Canvas('sheet');
+        canvas.isDrawingMode = true;
+        canvas.freeDrawingBrush.width = 1;
+        canvas.freeDrawingBrush.color = "#ff0000";
+        console.log(canvas);
+
+        $("#btn-clear").on("click", function(){
+            canvas.clear();
+        })
+        $("#btn-submit").on("click", function(){
+            sendImage(canvas, queryCallback);
+        })
+
+        $("#formControlRange").change("val", function(){
+            canvas.freeDrawingBrush.width = parseInt($("#formControlRange").val());
+        })
+        
+        function componentToHex(c) {
+            var hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+          }
+          
+          function rgbToHex(r, g, b) {
+            return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+          }
+          
+
+        function onColorChanged(color){
+            console.log(color)
+            let r = parseInt(Math.round(color._r))
+            let g = parseInt(Math.round(color._g))
+            let b = parseInt(Math.round(color._b))
+            canvas.freeDrawingBrush.color = rgbToHex(r, g, b)
+        }
+        $('#color-picker').spectrum({
+            type: "flat",
+            togglePaletteOnly: "true",
+            showAlpha: "false", 
+            change: onColorChanged,
+            move: onColorChanged
+          });
+
     });
 
 

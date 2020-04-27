@@ -8,15 +8,18 @@ from random import sample
 from flask import Flask, render_template, request, jsonify, make_response, send_file, url_for
 
 import requests
-from src.database import Entry, db
 
+from src.database import Entry, db
 from src.config import CONFIG
+from src.hdf5_manager import hdf5_file
+
+from src.spatial_histogram import histogram_comparator
 
 
 app = Flask(__name__)
 app.debug = True
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data/database.db"
-
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data/test-database.db"
+hdf5_file.set_path("data/test-features.hdf5")
 db.init_app(app)
 
 
@@ -27,11 +30,8 @@ def perform_query(string, k):
     imgs = db.session.query(Entry).all() #type:List[Entry]
 
     imgs = sample(imgs, k=50)
-    for i in imgs:
-        res.append(dict(
-            location = dict(movie=i.movie_name, frame_pos = i.frame_pos),
-            thumbnail = url_for("get_screenshot", file_path = i.thumbnail_path.replace("/", "|"))
-        ))
+    for r in imgs:
+        res.append(r.to_json())
     return res
 
 
@@ -78,6 +78,39 @@ def query():
     q = request.json['query']
     return jsonify(perform_query(q, 10))
 
+import numpy as np
+import cv2
+import re
+from PIL import Image
+import base64
+import io
+
+@app.route("/query-image/", methods=["POST"])
+def query_image():
+    """
+    Performs a query and returns a list of results to the front end.
+    :return:
+    """
+
+    data = request.values['imageBase64']
+    data = re.sub('^data:image/.+;base64,', '', data)
+
+    data = base64.b64decode(data)
+
+    nparr = np.frombuffer(data, dtype=np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img_lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
+    alpha = np.zeros(shape = (img.shape[:2]), dtype=np.float32)
+    alpha[np.where(np.sum(img, axis=2) > 0)] = 1.0
+    img_lab = np.dstack((img_lab, alpha))
+
+    indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator)
+
+    cv2.imshow("tt", img)
+    results = db.session.query(Entry).filter(Entry.histogram_feature_index.in_(indices.tolist())).all()
+    results = [r.to_json() for r in results]
+    return jsonify(results)
 
 if __name__ == '__main__':
     app.run()

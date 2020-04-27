@@ -2,6 +2,8 @@ import os
 import uuid
 import cv2
 
+from flask import url_for
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -37,7 +39,15 @@ class Entry(Base):
 
     histogram_feature_index = Column(Integer, default=-1)
 
-engine = create_engine("sqlite:///data/database.db", echo=False)
+    def to_json(self):
+        return dict(
+            id=self.id,
+            location = dict(movie=self.movie_name, frame_pos = self.frame_pos),
+            movie_path=self.movie_path,
+            thumbnail = url_for("get_screenshot", file_path = self.thumbnail_path.replace("/", "|"))
+        )
+
+engine = create_engine("sqlite:///data/test-database.db", echo=False)
 Base.metadata.create_all(engine)
 
 session = sessionmaker(bind=engine)()

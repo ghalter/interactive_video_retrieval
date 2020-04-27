@@ -1,0 +1,29 @@
+{% block cdn %}
+
+<script src="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.0/dist/spectrum.min.js">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.0/dist/spectrum.min.css">
+    
+
+{% endblock %}
+
+
+{% block content %}
+<div id="sheet-container">
+    <canvas id="sheet" width="400" height="400"></canvas>
+</div>
+<div>
+    <input id="color-picker" value='#276cb8' />
+</div>
+{% endblock %}
+
+<script>
+    $('#color-picker').spectrum({
+        type: "flat",
+        togglePaletteOnly: "true",
+        showAlpha: "false"
+      });
+</script>
+
+{% block scripts %}
+
+{% endblock %}

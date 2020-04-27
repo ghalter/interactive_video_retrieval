@@ -39,3 +39,22 @@ function submitResult(movie, frame_pos){
         },
       });
 }
+
+function sendImage(canvas, callback){
+  var dataURL = canvas.toDataURL();
+  $.ajax({
+      type: "POST",
+      url: "/query-image/",
+      data: {
+        imageBase64: dataURL
+      },
+      success: function (e) {
+        callback(e);
+      },
+      error: function (jqXHR, textStatus, errorThrown ) {
+        console.log("Error", jqXHR, textStatus, errorThrown);
+      },
+    }).done(function() {
+      console.log('sent');
+  });
+}
