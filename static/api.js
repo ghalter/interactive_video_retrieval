@@ -18,10 +18,9 @@ function queryDatabase(string, callack) {
 
 function createImageCard(location, thumbnail, cid){
     let car_tmpl = `<div class="card" style="width: 10rem;">
+    <a id="submit-` + cid + `" class="btn btn-primary">
       <img class="card-img-top" src="`+thumbnail+`" alt="Card image cap">
-      <div class="card-body">
-        <p class="card-text"> Movie:`+location.movie+` FramePos:`+location.frame_pos+`</p>
-        <a id="submit-` + cid + `" class="btn btn-primary">Submit</a>
+</a>
       </div>
     </div>`;
     return car_tmpl;

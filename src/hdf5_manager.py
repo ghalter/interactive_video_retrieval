@@ -23,6 +23,12 @@ ALL_ANALYSES = [
     DS_COL_HIST,
 ]
 
+def mse_comparator(X, Y):
+    mse_axis = list(range(len(Y.shape)))[1:]
+    mse_axis = tuple(mse_axis)
+
+    return np.nan_to_num(((Y - X) ** 2)).mean(axis=mse_axis)
+
 class HDF5Manager():
     """
     The HDF5 manager takes care on dumping and loading data from a
@@ -119,7 +125,7 @@ class HDF5Manager():
             raise IOError("HDF5 File not opened yet")
         return self.h5_file[dataset_name][pos]
 
-    def fit(self, X, dataset_name, k=100, window=1000):
+    def fit(self, X, dataset_name, k=100, window=1000, func=mse_comparator):
         """
         Finds a ranked list of closest feature vectors.
 
@@ -135,29 +141,26 @@ class HDF5Manager():
         ranked_indices = None
         ranked_mse = None
 
-        mse_axis = list(range(len(self.h5_file[dataset_name].shape)))[1:]
-        mse_axis = tuple(mse_axis)
-
         while c < stop:
             x0, x1 = c, np.clip(c + window, None, stop)
             Y = self.h5_file[dataset_name][x0:x1]
 
             indices = np.arange(x0, x1, dtype=np.uint64)
-            #TODO Cosine Similarity
-            mse = np.nan_to_num(((Y - X) ** 2)).mean(axis=mse_axis)
 
-            sorting = np.argsort(mse)
+            metric = func(X, Y)
+
+            sorting = np.argsort(metric)
 
             # We keep the k best matches
-            mse = mse[sorting][:np.clip(k, None, mse.shape[0])]
-            indices = indices[sorting][:np.clip(k, None, mse.shape[0])]
+            metric = metric[sorting][:np.clip(k, None, metric.shape[0])]
+            indices = indices[sorting][:np.clip(k, None, metric.shape[0])]
 
             if ranked_indices is None:
                 ranked_indices = indices
-                ranked_mse = mse
+                ranked_mse = metric
             else:
                 ranked_indices = np.concatenate((ranked_indices, indices))
-                ranked_mse = np.concatenate((ranked_mse, mse))
+                ranked_mse = np.concatenate((ranked_mse, metric))
             c += window
 
         new_ranked = np.argsort(ranked_mse)

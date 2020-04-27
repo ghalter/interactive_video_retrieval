@@ -20,7 +20,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data/database.db"
 db.init_app(app)
 
 
-
 def perform_query(string, k):
     # TODO implemented the actual query to perform
     print(string)
@@ -39,6 +38,7 @@ def perform_query(string, k):
 @app.route('/')
 def index():
     return render_template("index.html")
+
 
 @app.route('/screenshot/<string:file_path>')
 def get_screenshot(file_path):
