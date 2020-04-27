@@ -1,6 +1,8 @@
 import numpy as np
 import cv2
 
+from src.config import CONFIG
+
 
 def calculate_histogram(frame_lab, n_bins=10):
     """
@@ -60,17 +62,13 @@ def histogram_comparator(X, Y):
             h = calculate_histogram(X[
                                 x * row_wnd: (x + 1) * row_wnd,
                                 y * col_wnd: (y + 1) * col_wnd
-                                ], n_bins=10)
+                                ], n_bins=CONFIG['n_hist_bins'])
             if np.sum(h) > 0:
                 r = []
                 for i in range(Y.shape[0]):
                     d = cv2.compareHist(Y[i, x, y].astype(np.float32), h.astype(np.float32), cv2.HISTCMP_BHATTACHARYYA)
                     r.append(d)
                 mse.append(r)
-                # mse.append(np.mean(np.dot(Y[:, x, y], h)
-                #                    / np.dot(np.abs(Y[:, x, y]), np.abs(h))
-                #                    , axis=(1,2,3)))
-                # mse.append(((Y[:, x, y] - h) ** 2).mean(axis=(1,2,3)))
                 c += 1
 
     mse = np.array(mse)

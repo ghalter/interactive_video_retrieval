@@ -16,6 +16,11 @@ from src.hdf5_manager import hdf5_file
 from src.spatial_histogram import histogram_comparator
 
 
+n_bins = CONFIG['n_hist_bins']
+n_cols = CONFIG['n_hist_cols']
+n_rows = CONFIG['n_hist_rows']
+
+
 app = Flask(__name__)
 app.debug = True
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data/test-database.db"
