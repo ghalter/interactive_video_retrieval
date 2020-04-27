@@ -2,5 +2,8 @@
   "server": "http://192.168.0.0",
   "member": "Bob",
   "team": "Zerberster",
-  "thumbnail_folder": "data/thumbnails/"
+  "thumbnail_folder": "data/thumbnails/",
+  "n_hist_bins": 10,
+  "n_hist_cols": 4,
+  "n_hist_rows": 3
 }

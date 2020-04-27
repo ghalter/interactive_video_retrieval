@@ -18,15 +18,17 @@ def calculate_histogram(frame_lab, n_bins=10):
     else:
         frame_lab = np.reshape(frame_lab, (frame_lab.shape[0] * frame_lab.shape[1], 3))
 
-    print(frame_lab.shape)
+    frame_lab[:, 1] = np.clip(frame_lab[:, 1], -60, 60)
+    frame_lab[:, 2] = np.clip(frame_lab[:, 2], -60, 60)
+
     hist = cv2.calcHist([frame_lab[:, 0],
                          frame_lab[:, 1],
                          frame_lab[:, 2]],
                         [0, 1, 2],
                         None,
                         [n_bins, n_bins, n_bins],
-                        [0, 100, -100, 100,
-                         -100, 100]).astype(np.float16)
+                        [0, 100, -60, 60,
+                         -60, 60]).astype(np.float16)
     return hist / frame_lab.shape[0]
 
 
@@ -42,6 +44,7 @@ def calculate_spatial_histogram(frame_lab, n_rows = 3, n_cols = 3, n_bins = 10):
                                           ], n_bins=n_bins)
     return d
 
+from scipy.spatial import distance as dist
 
 def histogram_comparator(X, Y):
     n_rows = Y.shape[1]
@@ -59,10 +62,19 @@ def histogram_comparator(X, Y):
                                 y * col_wnd: (y + 1) * col_wnd
                                 ], n_bins=10)
             if np.sum(h) > 0:
-                mse.append(((Y[:, x, y] - h) ** 2).mean(axis=(1,2,3)))
+                r = []
+                for i in range(Y.shape[0]):
+                    d = cv2.compareHist(Y[i, x, y].astype(np.float32), h.astype(np.float32), cv2.HISTCMP_BHATTACHARYYA)
+                    r.append(d)
+                mse.append(r)
+                # mse.append(np.mean(np.dot(Y[:, x, y], h)
+                #                    / np.dot(np.abs(Y[:, x, y]), np.abs(h))
+                #                    , axis=(1,2,3)))
+                # mse.append(((Y[:, x, y] - h) ** 2).mean(axis=(1,2,3)))
                 c += 1
+
     mse = np.array(mse)
-    mse = np.mean(mse, axis=0)
+    mse = np.log(np.mean(mse, axis=0))
     return mse
 
 
