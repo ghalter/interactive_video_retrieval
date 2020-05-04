@@ -1,6 +1,7 @@
 import os
 import uuid
 import cv2
+import json
 
 from flask import url_for
 
@@ -17,6 +18,7 @@ MAX_WIDTH = 730
 
 Base = declarative_base()
 db = SQLAlchemy()
+
 
 def resize_with_aspect(img, width = None, height = None, mode=cv2.INTER_CUBIC):
     if width is not None:
@@ -38,6 +40,9 @@ class Entry(Base):
     thumbnail_path = Column(String)
 
     histogram_feature_index = Column(Integer, default=-1)
+    xception_feature_index = Column(Integer, default=-1)
+    xception_string = Column(String)
+    color_labels = Column(String)
 
     def to_json(self):
         return dict(
@@ -46,6 +51,12 @@ class Entry(Base):
             movie_path=self.movie_path,
             thumbnail = url_for("get_screenshot", file_path = self.thumbnail_path.replace("/", "|"))
         )
+
+    def get_xception(self):
+        return json.loads(self.xception_string)
+
+    def get_colors(self):
+        return json.loads(self.color_labels)
 
 engine = create_engine("sqlite:///data/test-database.db", echo=False)
 Base.metadata.create_all(engine)

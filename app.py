@@ -9,7 +9,7 @@ from flask import Flask, render_template, request, jsonify, make_response, send_
 
 import requests
 
-from src.database import Entry, db
+from src.database import Entry, db, Base
 from src.config import CONFIG
 from src.hdf5_manager import hdf5_file
 
@@ -25,9 +25,9 @@ app = Flask(__name__)
 app.debug = True
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data/test-database.db"
 hdf5_file.set_path("data/test-features.hdf5")
-db.init_app(app)
+# db.init_app(app)
 
-
+Base.metadata.create_all()
 def perform_query(string, k):
     # TODO implemented the actual query to perform
     print(string)
