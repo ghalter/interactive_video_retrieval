@@ -87,15 +87,22 @@ class MW(QMainWindow):
         if os.path.isfile("saved.json"):
             self.load()
 
-        self.on_change()
+        self.on_change(incr=None)
         self.show()
-
 
 
     def on_change(self, incr=1):
         self.dataset[self.current_index]['annotation'] = self.lineedit.text()
-        self.current_index += incr
 
+        if incr is None:
+            for idx, i in enumerate(self.dataset):
+                if i['annotation'] != "":
+                    self.current_index = idx
+        else:
+            self.current_index += incr
+
+
+        print(self.current_index)
         if self.current_index >= 0 and self.current_index < len(self.dataset):
             px = QPixmap(self.files[self.current_index])
             self.v.setPixmap(px)
