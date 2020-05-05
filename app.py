@@ -134,6 +134,9 @@ def similar():
     else:
         img = cv2.imread(e.thumbnail_path)
 
+        cv2.imshow("q", img)
+        cv2.waitKey()
+        cv2.destroyAllWindows()
         img_lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
 
         indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator)

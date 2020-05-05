@@ -13,6 +13,7 @@ with open("data/labels.json", "r") as f:
     labels = [l[1] for l in labels.values()]
     print(labels)
 
+
 def init_xception(include_top = True):
     global xception_model
     xception_model = Xception(include_top=include_top, weights='imagenet')

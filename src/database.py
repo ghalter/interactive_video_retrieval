@@ -63,7 +63,8 @@ class Entry(Base):
     def get_query_strings(self):
         return self.get_colors() + self.get_xception(as_list=True)
 
-engine = create_engine("sqlite:///data/test-database.db", echo=False)
+# engine = create_engine("sqlite:///data/test-database.db", echo=False)
+engine = create_engine("sqlite:///data/database.db", echo=False)
 Base.metadata.create_all(engine)
 
 session = sessionmaker(bind=engine)()
