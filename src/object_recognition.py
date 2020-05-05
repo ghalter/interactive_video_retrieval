@@ -9,7 +9,9 @@ xception_model = None
 
 with open("data/labels.json", "r") as f:
     labels = json.load(f)
-
+    print(labels)
+    labels = [l[1] for l in labels.values()]
+    print(labels)
 
 def init_xception(include_top = True):
     global xception_model

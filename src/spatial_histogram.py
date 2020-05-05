@@ -102,10 +102,9 @@ if __name__ == '__main__':
 
     lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
     lab = np.dstack((lab, alpha))
-    print(lab.shape)
+
     indices, distances = ds.fit(lab, "histograms", func=histogram_comparator)
 
-    print(indices)
     # img = cv2.imread(test_images[50])
     img[np.where(alpha == 0.0)] = [0, 0, 0]
     cv2.imshow("input", img)

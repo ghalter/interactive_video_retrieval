@@ -1,6 +1,16 @@
 """
 This is the web server
 """
+
+
+import numpy as np
+import cv2
+import re
+from PIL import Image
+import base64
+import io
+import json
+
 import os
 from typing import List
 from random import sample
@@ -14,7 +24,12 @@ from src.config import CONFIG
 from src.hdf5_manager import hdf5_file
 
 from src.spatial_histogram import histogram_comparator
+from src.object_recognition import labels
+import json
 
+with open("static/all_labels.json", "w") as f:
+    print(labels)
+    json.dump(labels, f)
 
 n_bins = CONFIG['n_hist_bins']
 n_cols = CONFIG['n_hist_cols']
@@ -105,13 +120,35 @@ def query():
 
     return jsonify(perform_query(q, 10, sub=sub))
 
-import numpy as np
-import cv2
-import re
-from PIL import Image
-import base64
-import io
-import json
+@app.route("/similar/", methods=["POST"])
+def similar():
+    """
+    Performs a query and returns a list of results to the front end.
+    :return:
+    """
+    q = request.json['query']
+    print(q)
+    e = db.session.query(Entry).filter(Entry.id == q['id']).one_or_none()
+    if e is None:
+        return make_response("not found", 404)
+    else:
+        img = cv2.imread(e.thumbnail_path)
+
+        img_lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
+
+        indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator)
+        print(distances)
+        results = db.session.query(Entry).filter(Entry.histogram_feature_index.in_(indices.tolist())).all()
+        # results = subquery(results, sub)
+
+        results = [r.to_json() for r in results]
+        return jsonify(results)
+
+    # if len(sub) == 0:
+    #     sub = None
+
+    # return jsonify(perform_query(q, 10, sub=sub))
+
 
 @app.route("/query-image/", methods=["POST"])
 def query_image():
@@ -137,14 +174,17 @@ def query_image():
 
     indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator)
 
-
-
-
-
-    results = db.session.query(Entry).filter(Entry.histogram_feature_index.in_(indices.tolist())).all()
+    results = []
+    for idx in indices:
+        r = db.session.query(Entry).filter(Entry.histogram_feature_index == int(idx)).one_or_none()
+        if r is not None:
+            results.append(r)
+        print(idx)
+    # results = db.session.query(Entry).filter(Entry.histogram_feature_index.in_(indices.tolist())).all()
     results = subquery(results, sub)
 
     results = [r.to_json() for r in results]
+    print("Done", results)
     return jsonify(results)
 
 
