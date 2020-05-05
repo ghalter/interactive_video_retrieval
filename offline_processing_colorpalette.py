@@ -8,6 +8,7 @@ from src.hdf5_manager import hdf5_writer
 from src.database import session, dump_entry, get_by_hdf_index, Entry
 from src.palette_kmeans import KMeanPaletteClassifier
 
+
 # EXTRACTION #
 objects = []
 def compute_feature_over_db():
@@ -41,4 +42,4 @@ for k in t: #type:Entry
     print(k)
     cv2.imshow("out", cv2.imread(k.thumbnail_path))
     print(k.get_colors())
-    cv2.waitKey()<
+    cv2.waitKey()

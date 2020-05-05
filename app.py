@@ -25,18 +25,35 @@ app = Flask(__name__)
 app.debug = True
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data/test-database.db"
 hdf5_file.set_path("data/test-features.hdf5")
-# db.init_app(app)
+db.init_app(app)
 
-Base.metadata.create_all()
-def perform_query(string, k):
+def subquery(entities, sub):
+    if sub is None or len(sub) == 0:
+        return entities
+    sub_ids = [t['id'] for t in sub]
+    return [e for e in entities if e.id in sub_ids]
+
+def perform_query(string, k, sub = None):
     # TODO implemented the actual query to perform
-    print(string)
+    tokens = string.split(",")
+    tokens = [t.strip().lower() for t in tokens]
+    print(tokens)
     res = []
-    imgs = db.session.query(Entry).all() #type:List[Entry]
 
-    imgs = sample(imgs, k=50)
-    for r in imgs:
-        res.append(r.to_json())
+    imgs = db.session.query(Entry).all() #type:List[Entry]
+    imgs = subquery(imgs, sub)
+
+    for i in imgs:
+        labels = i.get_query_strings()
+        all_found = []
+        for string in tokens:
+            for k in labels:
+                if string in k:
+                    all_found.append(string)
+                    break
+
+        if all_found == tokens:
+            res.append(i.to_json())
     return res
 
 
@@ -81,7 +98,12 @@ def query():
     :return:
     """
     q = request.json['query']
-    return jsonify(perform_query(q, 10))
+    sub = request.json['subquery']
+
+    if len(sub) == 0:
+        sub = None
+
+    return jsonify(perform_query(q, 10, sub=sub))
 
 import numpy as np
 import cv2
@@ -89,6 +111,7 @@ import re
 from PIL import Image
 import base64
 import io
+import json
 
 @app.route("/query-image/", methods=["POST"])
 def query_image():
@@ -97,10 +120,12 @@ def query_image():
     :return:
     """
 
+
     data = request.values['imageBase64']
     data = re.sub('^data:image/.+;base64,', '', data)
-
     data = base64.b64decode(data)
+    sub = json.loads(request.values['subquery'])
+
 
     nparr = np.frombuffer(data, dtype=np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -112,8 +137,13 @@ def query_image():
 
     indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator)
 
-    cv2.imshow("tt", img)
+
+
+
+
     results = db.session.query(Entry).filter(Entry.histogram_feature_index.in_(indices.tolist())).all()
+    results = subquery(results, sub)
+
     results = [r.to_json() for r in results]
     return jsonify(results)
 

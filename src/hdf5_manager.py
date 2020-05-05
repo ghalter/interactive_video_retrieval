@@ -7,7 +7,7 @@ This file contains the definition of the HDF5_Manager,
 taking care of the process of dumping and storing data in the process.
 
 """
-
+import gc
 import os
 import h5py
 import numpy as np
@@ -89,6 +89,14 @@ class HDF5Manager():
             self._index[name] = self.h5_file[name].attrs['cursor_pos']
             print("Exists:", name.ljust(30), "\tCursor Pos:",self._index[name])
 
+    def reset(self, name, shape, dtype):
+        if name not in self.h5_file and self.h5_file.mode == "r+":
+            self.initialize_dataset(name, shape, dtype=dtype)
+        else:
+            del self.h5_file[name]
+            gc.collect()
+            self.initialize_dataset(name, shape, dtype=dtype)
+
     def dump(self, d, dataset_name, flush = True):
         """
         Dums a data entry in a given dataset
@@ -169,6 +177,20 @@ class HDF5Manager():
 
         return ranked_indices, ranked_mse
 
+    def boolean_search(self, query, dataset_name, mode="and"):
+        ds = self.h5_file[dataset_name]
+        if mode == "and":
+            res = np.ones(shape=ds.shape[0])
+        else:
+            res = np.zeros(shape=ds.shape[0])
+
+        for (idx, val) in query:
+            indices = ds[:, idx] == val
+            if mode == "and":
+                res = np.logical_and(res, indices)
+            else:
+                res = np.logical_or(res, indices)
+        return res
 
     def on_close(self):
         if self.h5_file is not None:

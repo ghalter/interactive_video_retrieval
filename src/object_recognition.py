@@ -1,9 +1,14 @@
+import json
+
 from keras.applications.xception import Xception
 from keras.preprocessing import image
 from keras.applications.xception import preprocess_input, decode_predictions
 import numpy as np
 
 xception_model = None
+
+with open("data/labels.json", "r") as f:
+    labels = json.load(f)
 
 
 def init_xception(include_top = True):

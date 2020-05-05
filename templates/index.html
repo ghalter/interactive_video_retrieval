@@ -2,34 +2,98 @@
 {% block cdn %}
 <style>
     html,body{height:100%;}
+
+    canvas {
+    padding: 0;
+    margin: auto;
+    display: block;
+}
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.0/dist/spectrum.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.0/dist/spectrum.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.6.3/fabric.js" integrity="sha256-aSsIe9BokS5Bo18owzdTHNNW1EMZsDDe+WzMkZBvGmY=" crossorigin="anonymous"></script>
-
+<link rel="stylesheet" href="/static/dark-theme-bootstrap.css">
 {% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-4">
-        <div id="sheet-container" class="row">
-            <canvas id="sheet" height="300" width="500"></canvas>
-        </div>
-        
-        <form>
-            <div class="form-group">
-              <label for="formControlRange">Stroke</label>
-              <input type="range" class="form-control-range" id="formControlRange">
+        <div id="accordion">
+          <div class="card">
+            <div class="card-header" id="headingOne">
+              <h3 class="mb-0">
+                <button class="btn btn-primary" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Sketch
+                </button>
+              </h3>
             </div>
-            <button type="button" class="btn btn-primary" id="btn-clear">Clear</button>
-            <button type="button" class="btn btn-primary" id="btn-submit">Submit</button>
-          </form>
 
-        <div class="row w-100">
-            <div class="col-md-12">
-                <input id="color-picker" value='#276cb8'>
+            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+              <div class="card-body">
+                  <div id="sheet-container" class="row" style="width:100%">
+                    <canvas id="sheet" height="300" width="500" ></canvas>
+                </div>
+
+                <form>
+                    <div class="form-group">
+                      <label for="formControlRange">Stroke</label>
+                      <input type="range" class="form-control-range" id="formControlRange">
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-3">
+                                 <button type="button" class="btn btn-danger" id="btn-clear" style="width:49%">Clear</button>
+                            </div>
+                            <div  class="col-md-5">
+
+                            </div>
+                            <div  class="col-md-4">
+                                <button type="button" class="btn btn-success" id="btn-img-query" style="width:49%">Query</button>
+                                <button type="button" class="btn btn-warning" id="btn-img-subquery" style="width:49%">Sub Query</button>
+                            </div>
+
+
+                        </div>
+
+                     </div>
+
+                    <div class="form-group">
+                        <input id="color-picker" value='#276cb8'>
+                        </div>
+                    </form>
+              </div>
             </div>
+          </div>
+          <div class="card">
+            <div class="card-header" id="headingTwo">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                  Collapsible Group Item #2
+                </button>
+              </h5>
+            </div>
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+              <div class="card-body">
+                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header" id="headingThree">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                  History
+                </button>
+              </h5>
+            </div>
+            <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+              <div class="card-body">
+                  <ul class="list-group" id="history-list">
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
 
     </div>
@@ -47,39 +111,58 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/api.js"></script>
-<script>
 
+<script src="/static/api.js"></script>
+<script src="/static/history.js"></script>
+
+<script>
     function queryCallback(e){
         $("#result-list").html("");
         let cid = 0;
+        currentResult = [];
         e.forEach((elem)=>{
+            currentResult.push(elem);
+        });
+        pushHistory();
+        updateResultView();
+
+    }
+
+    function updateResultView(){
+        $("#result-list").html("");
+        let cid = 0;
+        currentResult.forEach((elem)=>{
             let t = createImageCard(elem.location, elem.thumbnail, cid);
             $("#result-list").append(t);
             $("#submit-" + cid).on("click", function(){
                 submitResult(elem.location.movie, elem.location.frame_pos)
             });
-            
             cid ++;
         });
-
     }
+
 
     $( document ).ready(function() {
         $("#btn-query").on("click", function(){
-            queryDatabase($("#query-string").val(), queryCallback);
+            queryDatabase($("#query-string").val(), [], queryCallback);
+        })
+        $("#btn-sub-query").on("click", function(){
+            queryDatabase($("#query-string").val(), currentResult, queryCallback);
         })
         var canvas = new fabric.Canvas('sheet');
         canvas.isDrawingMode = true;
         canvas.freeDrawingBrush.width = 1;
         canvas.freeDrawingBrush.color = "#ff0000";
-        console.log(canvas);
+
 
         $("#btn-clear").on("click", function(){
             canvas.clear();
         })
-        $("#btn-submit").on("click", function(){
-            sendImage(canvas, queryCallback);
+        $("#btn-img-query").on("click", function(){
+            sendImage(canvas, [], queryCallback);
+        })
+        $("#btn-img-subquery").on("click", function(){
+            sendImage(canvas, currentResult, queryCallback);
         })
 
         $("#formControlRange").change("val", function(){
@@ -97,7 +180,6 @@
           
 
         function onColorChanged(color){
-            console.log(color)
             let r = parseInt(Math.round(color._r))
             let g = parseInt(Math.round(color._g))
             let b = parseInt(Math.round(color._b))

@@ -52,11 +52,16 @@ class Entry(Base):
             thumbnail = url_for("get_screenshot", file_path = self.thumbnail_path.replace("/", "|"))
         )
 
-    def get_xception(self):
+    def get_xception(self, as_list=False):
+        if as_list:
+            return [k['desc'] for k in json.loads(self.xception_string)]
         return json.loads(self.xception_string)
 
     def get_colors(self):
         return json.loads(self.color_labels)
+
+    def get_query_strings(self):
+        return self.get_colors() + self.get_xception(as_list=True)
 
 engine = create_engine("sqlite:///data/test-database.db", echo=False)
 Base.metadata.create_all(engine)

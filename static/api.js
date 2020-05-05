@@ -1,7 +1,8 @@
-function queryDatabase(string, callack) {
+function queryDatabase(string, sub, callack) {
       $.ajax({
         url: "/query/",
         data: JSON.stringify({
+          subquery:sub,
           query: string
           }),
         dataType: 'json',
@@ -40,12 +41,13 @@ function submitResult(movie, frame_pos){
       });
 }
 
-function sendImage(canvas, callback){
+function sendImage(canvas, sub, callback){
   var dataURL = canvas.toDataURL();
   $.ajax({
       type: "POST",
       url: "/query-image/",
       data: {
+        subquery:JSON.stringify(sub),
         imageBase64: dataURL
       },
       success: function (e) {

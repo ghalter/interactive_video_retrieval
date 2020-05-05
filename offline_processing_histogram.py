@@ -32,7 +32,7 @@ ds = HDF5Manager("data/features.hdf5", mode="r+")
 
 
 # Initialize a new feature vector dataset, in this case color histograms.
-ds.initialize_dataset("histograms", (16,16,16), dtype=np.float16)
+ds.reset("histograms", (16,16,16), dtype=np.float16)
 
 # Let's iterate over all movies
 for m in movies:

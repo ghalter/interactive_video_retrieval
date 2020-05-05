@@ -20,8 +20,8 @@ def calculate_histogram(frame_lab, n_bins=10):
     else:
         frame_lab = np.reshape(frame_lab, (frame_lab.shape[0] * frame_lab.shape[1], 3))
 
-    frame_lab[:, 1] = np.clip(frame_lab[:, 1], -60, 60)
-    frame_lab[:, 2] = np.clip(frame_lab[:, 2], -60, 60)
+    frame_lab[:, 1] = np.clip(frame_lab[:, 1], -60, 59)
+    frame_lab[:, 2] = np.clip(frame_lab[:, 2], -60, 59)
 
     hist = cv2.calcHist([frame_lab[:, 0],
                          frame_lab[:, 1],
@@ -63,16 +63,21 @@ def histogram_comparator(X, Y):
                                 x * row_wnd: (x + 1) * row_wnd,
                                 y * col_wnd: (y + 1) * col_wnd
                                 ], n_bins=CONFIG['n_hist_bins'])
+
             if np.sum(h) > 0:
                 r = []
+                idxs = np.where(h > 0)
                 for i in range(Y.shape[0]):
-                    d = cv2.compareHist(Y[i, x, y].astype(np.float32), h.astype(np.float32), cv2.HISTCMP_BHATTACHARYYA)
+                    a = h[idxs]
+                    b = Y[i, x, y][idxs]
+
+                    d = cv2.compareHist(a.astype(np.float32), b.astype(np.float32), cv2.HISTCMP_BHATTACHARYYA)
                     r.append(d)
                 mse.append(r)
                 c += 1
 
     mse = np.array(mse)
-    mse = np.log(np.mean(mse, axis=0))
+    mse = np.mean(mse, axis=0)
     return mse
 
 

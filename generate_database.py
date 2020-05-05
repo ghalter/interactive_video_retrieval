@@ -15,8 +15,10 @@ n_rows = CONFIG['n_hist_rows']
 
 
 def compute_feature_over_db(func,):
-    for d in session.query(Entry).all(): #type:Entry
-
+    total = len(session.query(Entry).all())
+    for i, d in enumerate(session.query(Entry).all()): #type:Entry
+        if i % 10 == 0:
+            print(i, total, i / np.round(total * 100, 2), "%")
         frame = cv2.imread(d.thumbnail_path)
         if frame is not None:
             func(d, frame)
@@ -32,6 +34,6 @@ def compute_histograms(entry, frame):
 
 
 hdf5_writer.set_path("data/test-features.hdf5", mode="r+")
-hdf5_writer.initialize_dataset("histograms", shape=(n_rows, n_cols, n_bins, n_bins, n_bins), dtype=np.float16)
+hdf5_writer.reset("histograms", shape=(n_rows, n_cols, n_bins, n_bins, n_bins), dtype=np.float16)
 compute_feature_over_db(compute_histograms)
 hdf5_writer.on_close()

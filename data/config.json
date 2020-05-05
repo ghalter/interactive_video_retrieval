@@ -4,6 +4,6 @@
   "team": "Zerberster",
   "thumbnail_folder": "data/thumbnails/",
   "n_hist_bins": 10,
-  "n_hist_cols": 4,
-  "n_hist_rows": 3
+  "n_hist_cols": 5,
+  "n_hist_rows": 4
 }
