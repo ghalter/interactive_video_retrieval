@@ -145,17 +145,16 @@ def similar():
         return make_response("not found", 404)
     else:
         img = cv2.imread(e.thumbnail_path)
-
-        # cv2.imshow("q", img)
-        # cv2.waitKey()
-        # cv2.destroyAllWindows()
         img_lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
 
         indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator)
-        results = db.session.query(Entry).filter(Entry.histogram_feature_index.in_(indices.tolist())).all()
-        # results = subquery(results, sub)
+        t = dict()
+        for r in db.session.query(Entry).all():
+            t[int(r.histogram_feature_index)] = r
+        result = [t[int(h)] for h in indices]
+        # result = subquery(result, sub)
 
-        results = [r.to_json() for r in results]
+        results = [r.to_json() for r in result]
         return jsonify(results)
 
     # if len(sub) == 0:

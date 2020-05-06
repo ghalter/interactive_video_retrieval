@@ -86,12 +86,19 @@ def histogram_comparator(X, Y):
 
             r = []
             if np.sum(h) > 0:
-                idxs = np.where(h > 0)
-                for i in range(Y.shape[0]):
-                    a = h[idxs]
-                    b = Y[i, x, y][idxs]
-                    d = cv2.compareHist(a.astype(np.float32), b.astype(np.float32), cv2.HISTCMP_BHATTACHARYYA)
-                    r.append(d)
+                if X.shape[2] == 3:
+                    for i in range(Y.shape[0]):
+                        a = h
+                        b = Y[i, x, y]
+                        d = cv2.compareHist(a.astype(np.float32), b.astype(np.float32), cv2.HISTCMP_BHATTACHARYYA)
+                        r.append(d)
+                else:
+                    idxs = np.where(h > 0)
+                    for i in range(Y.shape[0]):
+                        a = h[idxs]
+                        b = Y[i, x, y][idxs]
+                        d = cv2.compareHist(a.astype(np.float32), b.astype(np.float32), cv2.HISTCMP_BHATTACHARYYA)
+                        r.append(d)
                 c += 1
             else:
                 # r = [np.inf] * Y.shape[0]
@@ -116,7 +123,7 @@ if __name__ == '__main__':
     import glob
     from src.hdf5_manager import HDF5Manager
 
-    test_images = glob.glob("../data/thumbnails/*.jpg")[:100]
+    test_images = glob.glob("../data/thumbnails/*.jpg")[:5000]
     ds = HDF5Manager("../data/hist-test.hdf5", mode="r+")
     ds.initialize_dataset("histograms", shape=(3,3,10,10,10), dtype=np.float16)
     for p in test_images:
@@ -126,20 +133,23 @@ if __name__ == '__main__':
         hists = calculate_spatial_histogram(lab)
         ds.dump(hists, "histograms")
 
-    img = cv2.imread(test_images[50])
-
-    alpha = np.zeros(shape=(img.shape[0], img.shape[1]), dtype=np.float32)
-    alpha[-50:, -50:] = 1.0
-
-    lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
-    lab = np.dstack((lab, alpha))
-
-    indices, distances = ds.fit(lab, "histograms", func=histogram_comparator)
-
-    # img = cv2.imread(test_images[50])
-    img[np.where(alpha == 0.0)] = [0, 0, 0]
-    cv2.imshow("input", img)
     for i in range(10):
-        img = cv2.imread(test_images[indices[i]])
-        cv2.imshow("output" + str(i), img)
-    cv2.waitKey()
+        img = cv2.imread(test_images[i * 30])
+
+        # alpha = np.zeros(shape=(img.shape[0], img.shape[1]), dtype=np.float32)
+        # alpha[-50:, -50:] = 1.0
+
+        lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
+        # lab = np.dstack((lab, alpha))
+
+        indices, distances = ds.fit(lab, "histograms", func=histogram_comparator)
+
+        # img = cv2.imread(test_images[50])
+        # img[np.where(alpha == 0.0)] = [0, 0, 0]
+        print( indices)
+        cv2.imshow("input", img)
+        for i in range(10):
+            print(indices[i], len(test_images))
+            img = cv2.imread(test_images[indices[i]])
+            cv2.imshow("output" + str(i), img)
+        cv2.waitKey()
