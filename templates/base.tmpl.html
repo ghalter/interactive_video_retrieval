@@ -39,8 +39,6 @@
 
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" type="text/css" rel="stylesheet">
 
-    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
-    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 
     <script src="/static/js/api.js"></script>
 
@@ -57,6 +55,7 @@
         src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.0.0.min.js"></script>
     <script type="text/javascript" crossorigin=”anonymous”
         src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.0.0.min.js"></script>
+
 
     {% block head %}
     {% endblock %}
@@ -85,7 +84,14 @@
                         aria-describedby="inputGroup-sizing-sm">
                     <button id="btn-query" class="btn btn-success">Query</button>
                     <button id="btn-sub-query" class="btn btn-warning">Sub Query</button>
-                    <input id="query-mode-toggle" type="checkbox" checked data-toggle="toggle">
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label id="btn-embedding" class="btn btn-secondary active">
+                          <input type="radio" name="options" id="option1" autocomplete="off" checked> Embedding
+                        </label>
+                        <label class="btn btn-secondary">
+                          <input  id="btn-keywords" type="radio" name="options" id="option2" autocomplete="off"> Keywords
+                        </label>
+                      </div>
                 </div>
 
             </ul>

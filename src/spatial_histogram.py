@@ -57,27 +57,58 @@ def histogram_comparator(X, Y):
 
     mse = []
     c = 0
+    # X = calculate_spatial_histogram(X, n_rows, n_cols, CONFIG['n_hist_bins'])
+    # idxs = np.where(X > 0)
+    # print(X.shape, Y.shape)
+    # diff = Y - X
+    # diff = np.moveaxis(diff, 0, len(diff.shape) - 1)
+    #
+    # diff = diff[idxs]
+    #
+    # # Manhattan
+    # # res = np.sum(np.abs(res), axis=(0,1,2,3,4))
+    #
+    # print(diff.shape)
+    #
+    # res = -np.sum(diff**2 / diff, axis=(0))
+    #
+    # X = X.reshape()
+    # res = np.reshape(res, (CONFIG['n_hist_bins']**3 * n_rows * n_cols, res.shape[-1:][0]))
+    # mse = res
+
+    # BHATTACHARYYA
     for x in range(n_rows):
         for y in range(n_cols):
             h = calculate_histogram(X[
                                 x * row_wnd: (x + 1) * row_wnd,
                                 y * col_wnd: (y + 1) * col_wnd
-                                ], n_bins=CONFIG['n_hist_bins'])
+                                ], n_bins=CONFIG['n_hist_bins']).astype(np.float16)
 
+            r = []
             if np.sum(h) > 0:
-                r = []
                 idxs = np.where(h > 0)
                 for i in range(Y.shape[0]):
                     a = h[idxs]
                     b = Y[i, x, y][idxs]
-
                     d = cv2.compareHist(a.astype(np.float32), b.astype(np.float32), cv2.HISTCMP_BHATTACHARYYA)
                     r.append(d)
-                mse.append(r)
                 c += 1
+            else:
+                # r = [np.inf] * Y.shape[0]
+                r = [0] * Y.shape[0]
+            mse.append(r)
 
-    mse = np.array(mse)
-    mse = np.mean(mse, axis=0)
+
+    # mse = np.array(mse)
+    # mean = np.mean(mse[np.where(mse!=np.inf)])
+    #
+    # for i in range(n_rows * n_cols):
+    #     if np.any(mse[i] == np.inf):
+    #         print("replacing")
+    #         mse[i, :] = mean
+    # mse = np.mean(mse, axis=0)
+
+    mse = np.sum(np.array(mse), axis=0)
     return mse
 
 

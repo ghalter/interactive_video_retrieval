@@ -19,6 +19,15 @@ function updateSubmitionView(){
     });
 }
 
+function getSubmitionsFromServer(){
+
+}
+
+function pushSubmitionsToServer(){
+
+}
+
+
 function clearSubmition(){
     currentSubmition = []
     updateSubmitionView();

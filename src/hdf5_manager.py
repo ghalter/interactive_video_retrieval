@@ -133,7 +133,7 @@ class HDF5Manager():
             raise IOError("HDF5 File not opened yet")
         return self.h5_file[dataset_name][pos]
 
-    def fit(self, X, dataset_name, k=100, window=1000, func=mse_comparator):
+    def fit(self, X, dataset_name, k=500, window=1000, func=mse_comparator):
         """
         Finds a ranked list of closest feature vectors.
 
@@ -151,6 +151,7 @@ class HDF5Manager():
 
         while c < stop:
             x0, x1 = c, np.clip(c + window, None, stop)
+            print(x0, x1)
             Y = self.h5_file[dataset_name][x0:x1]
 
             indices = np.arange(x0, x1, dtype=np.uint64)
@@ -175,6 +176,7 @@ class HDF5Manager():
         ranked_indices = ranked_indices[new_ranked][:np.clip(k, None, ranked_indices.shape[0])]
         ranked_mse = ranked_mse[new_ranked][:np.clip(k, None, ranked_mse.shape[0])]
 
+        print(np.min(ranked_mse))
         return ranked_indices, ranked_mse
 
     def boolean_search(self, query, dataset_name, mode="and"):

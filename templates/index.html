@@ -1,123 +1,138 @@
 {% extends "base.tmpl.html" %}
 {% block cdn %}
 <style>
-    html,body{height:100%;}
+  html,
+  body {
+    height: 100%;
+  }
 
-		canvas {
-      width: 100%;
-      height: auto;
+  canvas {
+    width: 100%;
+    height: auto;
   }
 
   .button {
     display: none;
   }
+
   .wrapper:hover img {
     /* Change the filter in here */
   }
+
   .wrapper:hover .button {
     display: inline-block;
   }
-
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.0/dist/spectrum.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.0/dist/spectrum.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.6.3/fabric.js" integrity="sha256-aSsIe9BokS5Bo18owzdTHNNW1EMZsDDe+WzMkZBvGmY=" crossorigin="anonymous"></script>
+<link rel="stylesheet" type="text/css"
+  href="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.0/dist/spectrum.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.6.3/fabric.js"
+  integrity="sha256-aSsIe9BokS5Bo18owzdTHNNW1EMZsDDe+WzMkZBvGmY=" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="/static/dark-theme-bootstrap.css">
 {% endblock %}
 
 {% block content %}
 <div class="row">
-    <div class="col-md-4">
-        <div id="accordion">
-          <div class="card">
-            <div class="card-header" id="headingOne">
-              <h3 class="mb-0">
-                <button class="btn btn-secondary w-100" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Sketch
-                </button>
-              </h3>
+  <div class="col-md-4">
+    <div id="accordion">
+      <div class="card">
+        <div class="card-header" id="headingOne">
+          <h3 class="mb-0">
+            <button class="btn btn-secondary w-100" data-toggle="collapse" data-target="#collapseOne"
+              aria-expanded="true" aria-controls="collapseOne">Sketch
+            </button>
+          </h3>
+        </div>
+
+        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+          <div class="card-body">
+            <div id="sheet-container" class="row" style="width:100%; border: gray solid 2px">
+              <canvas id="sheet" height="400" width="500"></canvas>
             </div>
 
-            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-              <div class="card-body">
-                  <div id="sheet-container" class="row" style="width:100%; border: gray solid 2px">
-                    <canvas id="sheet" height="400" width="500"></canvas>
+            <form>
+              <div class="form-group">
+                <label for="formControlRange">Stroke</label>
+                <input type="range" class="form-control-range" id="formControlRange">
+              </div>
+              <div class="form-group">
+                <div class="row">
+                  <div class="col-md-3">
+                    <button type="button" class="btn btn-danger" id="btn-clear" style="width:49%">Clear</button>
+                  </div>
+                  <div class="col-md-5">
+
+                  </div>
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-success" id="btn-img-query" style="width:49%">Query</button>
+                    <button type="button" class="btn btn-warning" id="btn-img-subquery" style="width:49%">Sub
+                      Query</button>
+                  </div>
+
+
                 </div>
 
-                <form>
-                    <div class="form-group">
-                      <label for="formControlRange">Stroke</label>
-                      <input type="range" class="form-control-range" id="formControlRange">
-                    </div>
-                    <div class="form-group">
-                        <div class="row">
-                            <div class="col-md-3">
-                                 <button type="button" class="btn btn-danger" id="btn-clear" style="width:49%">Clear</button>
-                            </div>
-                            <div  class="col-md-5">
-
-                            </div>
-                            <div  class="col-md-4">
-                                <button type="button" class="btn btn-success" id="btn-img-query" style="width:49%">Query</button>
-                                <button type="button" class="btn btn-warning" id="btn-img-subquery" style="width:49%">Sub Query</button>
-                            </div>
-
-
-                        </div>
-
-                     </div>
-
-                    <div class="form-group">
-                        <input id="color-picker" value='#276cb8'>
-                        </div>
-                    </form>
               </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header" id="headingTwo">
-              <h5 class="mb-0">
-                <button class="btn btn-secondary w-100 collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                  Bookmarked
-                </button>
-              </h5>
-            </div>
-            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-              <div class="card-body">
-                <div id="submition-list" class="row">
 
-                </div>
+              <div class="form-group">
+                <input id="color-picker" value='#276cb8'>
               </div>
-            </div>
+            </form>
           </div>
-          <div class="card">
-            <div class="card-header" id="headingThree">
-              <h5 class="mb-0">
-                <button class="btn btn-secondary w-100 collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                  History
-                </button>
-              </h5>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" id="headingTwo">
+          <h5 class="mb-0">
+            <button class="btn btn-secondary w-100 collapsed" data-toggle="collapse" data-target="#collapseTwo"
+              aria-expanded="false" aria-controls="collapseTwo">
+              Bookmarked
+            </button>
+          </h5>
+        </div>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+          <div class="card-body">
+            <div id="submition-list" class="row">
+
             </div>
-            <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
-              <div class="card-body">
-                  <ul class="list-group" id="history-list">
-                </ul>
+            <div class="row">
+              <div class="col-md-3">
+                <button type="button" class="btn btn-danger" id="btn-clear-bookmarks" style="width:49%">Clear</button>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      <div class="card">
+        <div class="card-header" id="headingThree">
+          <h5 class="mb-0">
+            <button class="btn btn-secondary w-100 collapsed" data-toggle="collapse" data-target="#collapseThree"
+              aria-expanded="false" aria-controls="collapseThree">
+              History
+            </button>
+          </h5>
+        </div>
+        <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+          <div class="card-body">
+            <ul class="list-group" id="history-list">
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="col-md-8">
+    <div id="result-list" class="row">
 
     </div>
-    <div class="col-md-8">
-        <div id="result-list" class="row">
-
-        </div>
-        <div class="row justify-content-center h-100">
-            <!-- <div class="col-md-8">
+    <div class="row justify-content-center h-100">
+      <!-- <div class="col-md-8">
                 {% include "image_view.tmpl.html" %}
             </div> -->
-        </div>
     </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -128,106 +143,121 @@
 <script src="/static/submit.js"></script>
 
 <script>
-    function queryCallback(e){
-        $("#result-list").html("");
-        let cid = 0;
-        currentResult = [];
-        e.forEach((elem)=>{
-            currentResult.push(elem);
-        });
-        pushHistory();
-        updateResultView();
+  function queryCallback(e) {
+    $("#result-list").html("");
+    let cid = 0;
+    currentResult = [];
+    e.forEach((elem) => {
+      currentResult.push(elem);
+    });
+    pushHistory();
+    updateResultView();
 
-    }
+  }
 
-    function updateResultView(){
-        $("#result-list").html("");
-        let cid = 0;
-        currentResult.forEach((elem)=>{
-            let t = createImageCard("keep", elem.location, elem.thumbnail, cid);
-            $("#result-list").append(t);
-            $("#keep-" + cid).on("click", function(){
-              addToSubmitionList(elem);
-                // submitResult(elem.location.movie, elem.location.frame_pos)
-            });
-            $("#keep-" + cid +"-similar").on("click", function(){
-              findSimilar(elem, queryCallback);
-          });
-            cid ++;
-        });
-    }
-    
-
-    $( document ).ready(function() {
-        function reportWindowSize() {
-          let width = $("#sheet-container").innerWidth();
-          let height = width * (9.0/16)
-          canvas.setWidth(width * 1.0);
-          canvas.setHeight(height * 1.0);
-
-        }
-        
-        window.onresize = reportWindowSize;
-        //$.getJSON('/static/all_labels.json', function(data) {
-        //console.log(data);
-        //    $('#query-string').autocomplete({
-        //        source: data,
-        //        multiple: true
-        //    });
-        // });
-
-        $("#btn-query").on("click", function(){
-            queryDatabase($("#query-string").val(), [], queryCallback);
+  function updateResultView() {
+    $("#result-list").html("");
+    let cid = 0;
+    currentResult.forEach((elem) => {
+      let t = createImageCard("keep", elem.location, elem.thumbnail, cid, elem.caption);
+      $("#result-list").append(t);
+      $("#keep-" + cid).on("click", function () {
+        addToSubmitionList(elem);
+        // submitResult(elem.location.movie, elem.location.frame_pos)
+      });
+      $("#keep-" + cid + "-similar").on("click", function () {
+        findSimilar(elem, queryCallback);
+      });
+      cid++;
+      
+      if (cid > 100) {
+        $(function () {
+          $('[data-toggle="tooltip"]').tooltip()
         })
-        $("#btn-sub-query").on("click", function(){
-            queryDatabase($("#query-string").val(), currentResult, queryCallback);
-        })
-        var canvas = new fabric.Canvas('sheet');
-        canvas.isDrawingMode = true;
-        canvas.freeDrawingBrush.width = 1;
-        canvas.freeDrawingBrush.color = "#ff0000";
-
-
-        $("#btn-clear").on("click", function(){
-            canvas.clear();
-        })
-        $("#btn-img-query").on("click", function(){
-            sendImage(canvas, [], queryCallback);
-        })
-        $("#btn-img-subquery").on("click", function(){
-            sendImage(canvas, currentResult, queryCallback);
-        })
-
-        $("#formControlRange").change("val", function(){
-            canvas.freeDrawingBrush.width = parseInt($("#formControlRange").val());
-        })
-        
-        function componentToHex(c) {
-            var hex = c.toString(16);
-            return hex.length == 1 ? "0" + hex : hex;
-          }
-          
-          function rgbToHex(r, g, b) {
-            return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-          }
-          
-
-        function onColorChanged(color){
-            let r = parseInt(Math.round(color._r))
-            let g = parseInt(Math.round(color._g))
-            let b = parseInt(Math.round(color._b))
-            canvas.freeDrawingBrush.color = rgbToHex(r, g, b)
-        }
-        $('#color-picker').spectrum({
-            type: "flat",
-            togglePaletteOnly: "false",
-            showInput: "true",
-            showAlpha: "false", 
-            change: onColorChanged,
-            move: onColorChanged
-          });
+        return;
+      }
+      $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+      })
 
     });
+  }
+
+
+  $(document).ready(function () {
+    function reportWindowSize() {
+      let width = $("#sheet-container").innerWidth();
+      let height = width * (9.0 / 16)
+      canvas.setWidth(width * 1.0);
+      canvas.setHeight(height * 1.0);
+
+    }
+
+    window.onresize = reportWindowSize;
+    //$.getJSON('/static/all_labels.json', function(data) {
+    //console.log(data);
+    //    $('#query-string').autocomplete({
+    //        source: data,
+    //        multiple: true
+    //    });
+    // });
+
+    $("#btn-query").on("click", function () {
+      queryDatabase($("#query-string").val(), [], queryCallback);
+    })
+    $("#btn-sub-query").on("click", function () {
+      queryDatabase($("#query-string").val(), currentResult, queryCallback);
+    })
+    var canvas = new fabric.Canvas('sheet');
+    canvas.isDrawingMode = true;
+    canvas.freeDrawingBrush.width = 1;
+    canvas.freeDrawingBrush.color = "#ff0000";
+
+
+    $("#btn-clear").on("click", function () {
+      canvas.clear();
+    })
+    $("#btn-img-query").on("click", function () {
+      sendImage(canvas, [], queryCallback);
+    })
+    $("#btn-img-subquery").on("click", function () {
+      sendImage(canvas, currentResult, queryCallback);
+    })
+
+    $("#formControlRange").change("val", function () {
+      canvas.freeDrawingBrush.width = parseInt($("#formControlRange").val());
+    })
+
+    $("#btn-clear-bookmarks").on("click", function() {
+      clearSubmition();
+    })
+
+    function componentToHex(c) {
+      var hex = c.toString(16);
+      return hex.length == 1 ? "0" + hex : hex;
+    }
+
+    function rgbToHex(r, g, b) {
+      return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+    }
+
+
+    function onColorChanged(color) {
+      let r = parseInt(Math.round(color._r))
+      let g = parseInt(Math.round(color._g))
+      let b = parseInt(Math.round(color._b))
+      canvas.freeDrawingBrush.color = rgbToHex(r, g, b)
+    }
+    $('#color-picker').spectrum({
+      type: "flat",
+      togglePaletteOnly: "false",
+      showInput: "true",
+      showAlpha: "false",
+      change: onColorChanged,
+      move: onColorChanged
+    });
+
+  });
 
 
 </script>

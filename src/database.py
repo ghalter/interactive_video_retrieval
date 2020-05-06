@@ -30,6 +30,7 @@ def resize_with_aspect(img, width = None, height = None, mode=cv2.INTER_CUBIC):
 
     return cv2.resize(img, None, None, fy, fy, mode)
 
+
 class Entry(Base):
     __tablename__ = 'entries'
 
@@ -43,13 +44,15 @@ class Entry(Base):
     xception_feature_index = Column(Integer, default=-1)
     xception_string = Column(String)
     color_labels = Column(String)
+    caption = Column(String)
 
     def to_json(self):
         return dict(
             id=self.id,
             location = dict(movie=self.movie_name, frame_pos = self.frame_pos),
             movie_path=self.movie_path,
-            thumbnail = url_for("get_screenshot", file_path = self.thumbnail_path.replace("/", "|"))
+            thumbnail = url_for("get_screenshot", file_path = self.thumbnail_path.replace("/", "|")),
+            caption = self.caption
         )
 
     def get_xception(self, as_list=False):
@@ -63,11 +66,13 @@ class Entry(Base):
     def get_query_strings(self):
         return self.get_colors() + self.get_xception(as_list=True)
 
+
 # engine = create_engine("sqlite:///data/test-database.db", echo=False)
 engine = create_engine("sqlite:///data/database.db", echo=False)
 Base.metadata.create_all(engine)
 
 session = sessionmaker(bind=engine)()
+
 
 def dump_entry(movie_name, movie_path, frame_pos, frame, thumbnail_path = None) -> Entry:
     if thumbnail_path is None:
@@ -99,3 +104,4 @@ def get_by_hdf_index(index, dataset) -> Entry:
         return session.query(Entry).filter(Entry.histogram_feature_index == int(index)).one_or_none()
 
     return None
+

@@ -19,12 +19,13 @@ from flask import Flask, render_template, request, jsonify, make_response, send_
 
 import requests
 
-from src.database import Entry, db, Base
+from src.database import Entry, db, Base, session
 from src.config import CONFIG
 from src.hdf5_manager import hdf5_file
 
 from src.spatial_histogram import histogram_comparator
 from src.object_recognition import labels
+from src.sentence_embedding import find_similarity
 import json
 
 with open("static/all_labels.json", "w") as f:
@@ -38,9 +39,12 @@ n_rows = CONFIG['n_hist_rows']
 
 app = Flask(__name__)
 app.debug = True
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data/test-database.db"
-hdf5_file.set_path("data/test-features.hdf5")
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data/database.db"
+hdf5_file.set_path("data/features.hdf5")
 db.init_app(app)
+
+_entries =  session.query(Entry).all()
+_captions = [e.caption for e in _entries]
 
 def subquery(entities, sub):
     if sub is None or len(sub) == 0:
@@ -48,11 +52,11 @@ def subquery(entities, sub):
     sub_ids = [t['id'] for t in sub]
     return [e for e in entities if e.id in sub_ids]
 
+
 def perform_query(string, k, sub = None):
     # TODO implemented the actual query to perform
     tokens = string.split(",")
     tokens = [t.strip().lower() for t in tokens]
-    print(tokens)
     res = []
 
     imgs = db.session.query(Entry).all() #type:List[Entry]
@@ -68,7 +72,7 @@ def perform_query(string, k, sub = None):
                     break
 
         if all_found == tokens:
-            res.append(i.to_json())
+            res.append(i)
     return res
 
 
@@ -81,7 +85,6 @@ def index():
 def get_screenshot(file_path):
     file_path = file_path.replace("|", "/")
     path = os.path.abspath(file_path)
-    print(path)
     return send_file(path, mimetype='image/gif')
 
 
@@ -106,6 +109,7 @@ def submit(video, frame):
     return make_response("Submitted", 200)
 
 
+
 @app.route("/query/", methods=["POST"])
 def query():
     """
@@ -114,11 +118,19 @@ def query():
     """
     q = request.json['query']
     sub = request.json['subquery']
+    embedding = request.json['embedding']
 
     if len(sub) == 0:
         sub = None
 
-    return jsonify(perform_query(q, 10, sub=sub))
+    if embedding:
+        best_matches, _ = find_similarity(q, _captions, _entries)
+        res = subquery(best_matches, sub)
+    else:
+        res = perform_query(q, 10, sub=sub)
+
+    res = [r.to_json() for r in res]
+    return jsonify(res)
 
 @app.route("/similar/", methods=["POST"])
 def similar():
@@ -127,20 +139,19 @@ def similar():
     :return:
     """
     q = request.json['query']
-    print(q)
+    # print(q)
     e = db.session.query(Entry).filter(Entry.id == q['id']).one_or_none()
     if e is None:
         return make_response("not found", 404)
     else:
         img = cv2.imread(e.thumbnail_path)
 
-        cv2.imshow("q", img)
-        cv2.waitKey()
-        cv2.destroyAllWindows()
+        # cv2.imshow("q", img)
+        # cv2.waitKey()
+        # cv2.destroyAllWindows()
         img_lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
 
         indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator)
-        print(distances)
         results = db.session.query(Entry).filter(Entry.histogram_feature_index.in_(indices.tolist())).all()
         # results = subquery(results, sub)
 
@@ -182,7 +193,6 @@ def query_image():
         r = db.session.query(Entry).filter(Entry.histogram_feature_index == int(idx)).one_or_none()
         if r is not None:
             results.append(r)
-        print(idx)
     # results = db.session.query(Entry).filter(Entry.histogram_feature_index.in_(indices.tolist())).all()
     results = subquery(results, sub)
 
