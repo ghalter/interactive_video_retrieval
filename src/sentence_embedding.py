@@ -22,34 +22,16 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 import os
 import pickle
-import pandas as pd
 
 
 # Load Model
 _embedding_model = SentenceTransformer('bert-base-nli-mean-tokens')
 
-# Load caption embeddings using pickle
-dir_path = "data"
-embeddings_path = dir_path + '/embedding.pickle'
-file = open(embeddings_path, 'rb')
-_caption_embeddings = pickle.load(file)
-file.close()
-
-
-
-# Load the caption and img_ids from the captions.csv file
-csv_path = dir_path + '/captions.csv'
-csv = pd.read_csv(csv_path)
-_CAPTIONS = csv['caption'].tolist()
-_IMAGE_IDS = csv['thumbnail_id'].tolist()
-
-print(len(_caption_embeddings))
-# Define the query
-query = ['a group of people']
+with open("data/embedding.pickle", "rb") as f:
+    _caption_embeddings = pickle.load(f)
 
 
 def find_similarity(query, captions, entries, number_top_matches = 100):
-    
     query = [query]
     
     # Get the embedding of the query using SiameseBERT Networks
@@ -76,16 +58,14 @@ def find_similarity(query, captions, entries, number_top_matches = 100):
 
     return best_matches, results
 
+if __name__ == '__main__':
+    import pandas as pd
+    # Load the caption and img_ids from the captions.csv file
+    # csv_path = dir_path + '/captions.csv'
+    # # csv = pd.read_csv(csv_path)
+    # _CAPTIONS = csv['caption'].tolist()
+    # _IMAGE_IDS = csv['thumbnail_id'].tolist()
 
-
-
-
-# Get the best matching captions
-# best_matches, results = FindSimiliarities(query,
-#                                          caption_embeddings,
-#                                          captions,
-#                                          img_ids,
-#                                          embedding_model
-#                                          )
-
-# print(best_matches)
+    print(len(_caption_embeddings))
+    # Define the query
+    # query = ['a group of people']

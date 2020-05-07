@@ -141,3 +141,6 @@ src/image_captioning
 src/image_captioning.py
 
 .idea/*
+*.pickle
+*.csv
+*.pkl
