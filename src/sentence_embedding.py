@@ -30,12 +30,12 @@ _embedding_model = SentenceTransformer('bert-base-nli-mean-tokens')
 
 # Load caption embeddings using pickle
 dir_path = "data"
-embeddings_path = dir_path + '/caption_embeddings.pkl'
+embeddings_path = dir_path + '/embedding.pickle'
 file = open(embeddings_path, 'rb')
 _caption_embeddings = pickle.load(file)
 file.close()
 
-print(len(_caption_embeddings))
+
 
 # Load the caption and img_ids from the captions.csv file
 csv_path = dir_path + '/captions.csv'
@@ -43,6 +43,7 @@ csv = pd.read_csv(csv_path)
 _CAPTIONS = csv['caption'].tolist()
 _IMAGE_IDS = csv['thumbnail_id'].tolist()
 
+print(len(_caption_embeddings))
 # Define the query
 query = ['a group of people']
 
