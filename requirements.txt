@@ -4,3 +4,5 @@ h5py
 numpy
 sqlalchemy
 Flask-SQLAlchemy
+torch
+sentence-transformers

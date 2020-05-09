@@ -32,22 +32,24 @@ class KMeanPaletteClassifier:
     Computes a color palette and extracts color names for the given image.
     Pipeline: LAB -> SeedsSuperPixel -> KMEANS Palette -> Color Names mapping
     """
-    def __init__(self):
+    def __init__(self, k=20):
         self.model = None
         self.model_shape = None
         self.ccl = ColorClassifier()
+        self.k = k
 
     def fit(self, bgr):
         lab_uint = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
         lab_float = cv2.cvtColor(bgr.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
 
         if lab_uint.shape != self.model_shape:
-            self.model = cv2.ximgproc.createSuperpixelSEEDS(lab_uint.shape[1], lab_uint.shape[0], 3, 200,
+            self.model = cv2.ximgproc.createSuperpixelSEEDS(lab_uint.shape[1], lab_uint.shape[0], 3, 600,
                                                                      num_levels=6, histogram_bins=8)
         self.model.iterate(lab_uint)
         mask = self.model.getLabels()
 
         q = np.zeros(shape=lab_float.shape[:2])
+        log = np.zeros(shape=lab_float.shape)
         colors = []
         c = 0
 
@@ -56,10 +58,14 @@ class KMeanPaletteClassifier:
             col = np.mean(lab_float[indices], axis=0)
             q[indices] = c
             c += 1
+            log[indices] = cv2.cvtColor(np.array([[col]], dtype=np.float32), cv2.COLOR_LAB2BGR)[0,0]
             colors.append(col)
 
+        cv2.imshow("öpg", log)
+        cv2.imwrite("superpixel.jpg", (log * 255).astype(np.uint8))
+
         colors = np.array(colors, dtype=np.float32)
-        kmeans = KMeans(n_clusters=20, random_state=0).fit(colors)
+        kmeans = KMeans(n_clusters=self.k, random_state=0).fit(colors)
         res = np.zeros_like(lab_float)
         color_names = []
 
@@ -71,5 +77,14 @@ class KMeanPaletteClassifier:
             color_names.append(name)
 
             res[indices] = col
+
+            log[indices] = cv2.cvtColor(np.array([[col]], dtype=np.float32), cv2.COLOR_LAB2BGR)[0,0]
+
+        cv2.imshow("classified", log)
+        cv2.imwrite("classified_"+str(self.k)+".jpg", (log * 255).astype(np.uint8))
+
+        # cv2.waitKey()
         color_names = list(set(color_names))
+        print(color_names)
+
         return color_names, res

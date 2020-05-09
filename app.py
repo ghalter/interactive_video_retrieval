@@ -44,12 +44,18 @@ hdf5_file.set_path("data/features.hdf5")
 db.init_app(app)
 
 _entries =  session.query(Entry).all()
+_entries_dict = dict()
+for e in _entries:
+    _entries_dict[e.histogram_feature_index] = e
 _captions = [e.caption for e in _entries]
+
+_current_bookmarks = []
+
 
 def subquery(entities, sub):
     if sub is None or len(sub) == 0:
         return entities
-    sub_ids = [t['id'] for t in sub]
+    sub_ids = [int(t['id']) for t in sub]
     return [e for e in entities if e.id in sub_ids]
 
 
@@ -109,7 +115,6 @@ def submit(video, frame):
     return make_response("Submitted", 200)
 
 
-
 @app.route("/query/", methods=["POST"])
 def query():
     """
@@ -124,13 +129,19 @@ def query():
         sub = None
 
     if embedding:
-        best_matches, _ = find_similarity(q, _captions, _entries)
-        res = subquery(best_matches, sub)
+        if sub is None:
+            best_matches, _ = find_similarity(q, _captions, _entries, number_top_matches=1000)
+            res = subquery(best_matches, sub)
+        else:
+            best_matches, _ = find_similarity(q, _captions, _entries, number_top_matches=50000)
+            res = subquery(best_matches, sub)
     else:
         res = perform_query(q, 10, sub=sub)
 
+    print(res)
     res = [r.to_json() for r in res]
     return jsonify(res)
+
 
 @app.route("/similar/", methods=["POST"])
 def similar():
@@ -148,10 +159,11 @@ def similar():
         img_lab = cv2.cvtColor(img.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
 
         indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator)
-        t = dict()
-        for r in db.session.query(Entry).all():
-            t[int(r.histogram_feature_index)] = r
-        result = [t[int(h)] for h in indices]
+        result = []
+        for idx in indices:
+            r = db.session.query(Entry).filter(Entry.histogram_feature_index == int(idx)).one_or_none()
+            if r is not None:
+                result.append(r)
         # result = subquery(result, sub)
 
         results = [r.to_json() for r in result]
@@ -161,7 +173,6 @@ def similar():
     #     sub = None
 
     # return jsonify(perform_query(q, 10, sub=sub))
-
 
 @app.route("/query-image/", methods=["POST"])
 def query_image():
@@ -185,19 +196,36 @@ def query_image():
     alpha[np.where(np.sum(img, axis=2) > 0)] = 1.0
     img_lab = np.dstack((img_lab, alpha))
 
-    indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator)
+    if sub is None:
+        indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator)
 
-    results = []
-    for idx in indices:
-        r = db.session.query(Entry).filter(Entry.histogram_feature_index == int(idx)).one_or_none()
-        if r is not None:
-            results.append(r)
-    # results = db.session.query(Entry).filter(Entry.histogram_feature_index.in_(indices.tolist())).all()
-    results = subquery(results, sub)
+        results = []
+        for idx in indices:
+            results.append(_entries_dict[idx])
+    else:
+        indices, distances = hdf5_file.fit(img_lab, "histograms", func=histogram_comparator, k=50000)
+        results = []
+        for idx in indices:
+            results.append(_entries_dict[idx])
+        results = subquery(results, sub)
 
     results = [r.to_json() for r in results]
     print("Done", results)
     return jsonify(results)
+
+
+@app.route("/update-bookmarks/", methods=["POST"])
+def update_bookmarks():
+    books = request.json['bookmarks']
+    global _current_bookmarks
+    _current_bookmarks = db.session.query(Entry).filter(Entry.id.in_(books)).all()
+    return make_response("OK")
+
+
+@app.route("/get-bookmarks/")
+def get_bookmarks():
+    return jsonify([e.to_json() for e in _current_bookmarks])
+    pass
 
 
 if __name__ == '__main__':

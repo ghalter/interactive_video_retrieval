@@ -1,3 +1,7 @@
+"""
+Generates screenshots based on the pyshotdetect segmentation
+"""
+
 import os
 
 import cv2
