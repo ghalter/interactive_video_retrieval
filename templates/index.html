@@ -165,9 +165,14 @@
         addToSubmitionList(elem);
         // submitResult(elem.location.movie, elem.location.frame_pos)
       });
+      $("#keep-" + cid +"-movie").on("click", function(){
+        findMovie(elem, queryCallback);
+      });
+
       $("#keep-" + cid + "-similar").on("click", function () {
         findSimilar(elem, queryCallback);
       });
+
       cid++;
       
       if (cid > 100) {

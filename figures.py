@@ -78,15 +78,15 @@ for x in range(3):
     example[x * row_wnd, :] = [0,0,0]
     for y in range(4):
         example[:, y * col_wnd] = [0, 0, 0]
-        # h = hists[x, y]
-        # h = h[tf]
-        # h = np.reshape(h, newshape=h.shape[0]) + 0.01
-        # # h = np.log10(h)
-        # # h += 10
-        # axs[x, y].bar(range(h.shape[0]), h, color=cols)
-        # axs[x, y].set_yscale('log')
+        h = hists[x, y]
+        h = h[tf]
+        h = np.reshape(h, newshape=h.shape[0]) + 0.01
+        # h = np.log10(h)
+        # h += 10
+        axs[x, y].bar(range(h.shape[0]), h, color=cols)
+        axs[x, y].set_yscale('log')
 
 cv2.imwrite("example_grid.jpg", example)
-# plt.yscale("log")
-# plt.savefig("histograms")
-# plt.show()
+plt.yscale("log")
+plt.savefig("histograms")
+plt.show()

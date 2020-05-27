@@ -94,6 +94,7 @@ def get_screenshot(file_path):
     return send_file(path, mimetype='image/gif')
 
 
+"http://<server address>/submit?item=<video id>&frame=<frame number>&shot=<shot id>&timecode=<time code>&session=<session id>"
 @app.route('/submit/<string:video>/<int:frame>')
 @app.route('/submit/<string:video>/<int:frame>/')
 def submit(video, frame):
@@ -104,11 +105,10 @@ def submit(video, frame):
     :return:
     """
     url = CONFIG['server'] \
-          + "/vsb/submit?" \
-          + "team=" + CONFIG['team'] \
-          + "&member=" + CONFIG['member'] \
-          + "&video=" + video \
-          + "&frame=" + str(frame)
+          + "?" \
+          + "&item=" + video \
+          + "&frame=" + str(frame) \
+          + "&session=" + CONFIG['member']
     print("Submit to:", url)
 
     requests.get(url)
@@ -209,6 +209,7 @@ def query_image():
             results.append(_entries_dict[idx])
         results = subquery(results, sub)
 
+    results = results[:2000]
     results = [r.to_json() for r in results]
     print("Done", results)
     return jsonify(results)
@@ -226,6 +227,16 @@ def update_bookmarks():
 def get_bookmarks():
     return jsonify([e.to_json() for e in _current_bookmarks])
     pass
+
+@app.route('/get-movie-clips/', methods=["POST"])
+def get_all_of_movie():
+    q = request.json['query']
+    print(q)
+    entries = db.session.query(Entry).filter(Entry.movie_name == q['location']['movie']).all()
+    print(entries)
+    results = [r.to_json() for r in entries]
+    print("Done", results)
+    return jsonify(results)
 
 
 if __name__ == '__main__':

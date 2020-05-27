@@ -11,6 +11,11 @@ function updateSubmitionView(){
         $("#submit-" + cid +"-similar").on("click", function(){
             findSimilar(elem, queryCallback);
         });
+
+        $("#submit-" + cid +"-movie").on("click", function(){
+            findMovie(elem, queryCallback);
+        });
+
         $("#submit-" + cid).on("click", function(){
             submitResult(elem.location.movie, elem.location.frame_pos)
         });
