@@ -6,3 +6,6 @@ sqlalchemy
 Flask-SQLAlchemy
 torch
 sentence-transformers
+opencv-python
+keras
+tensorflow
