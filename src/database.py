@@ -64,7 +64,7 @@ class Entry(Base):
         return json.loads(self.color_labels)
 
     def get_query_strings(self):
-        return self.get_colors() + self.get_xception(as_list=True)
+        return self.get_colors() + self.get_xception(as_list=True) + [self.movie_name, self.thumbnail_path]
 
 
 # engine = create_engine("sqlite:///data/test-database.db", echo=False)
