@@ -1,3 +1,5 @@
+Code for the Seminar Interactive Video Retrieval Course
+
 # interactive_video_retrieval
 
 - move and unpack the thumbnails.zip in the "data/"
